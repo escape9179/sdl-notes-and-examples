@@ -3,7 +3,7 @@ project(SDLGame CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(SDLGame main.cpp)
+add_executable(SDLGame src/main.cpp)
 
 find_library(SDL2 SDL2 lib)
 find_library(SDL2MAIN SDL2main lib)
