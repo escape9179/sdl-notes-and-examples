@@ -8,3 +8,6 @@
 ### SDL_BlitSurface
 * What blitting does is take a source surface and stamps a copy of it onto the destination surface. The first argument of SDL_BlitSurface is the source image. The third argument is the destination.
 * Renders to back buffer
+# Lesson 03 - Event Driven Programming
+### SDL_PollEvent
+* What SDL_PollEvent does is take the most recent event from the event queue and puts the data from the event into the SDL_Event we passed into the function.

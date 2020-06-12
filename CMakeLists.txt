@@ -7,7 +7,8 @@ add_executable(SDLGame src/main.cpp)
 
 find_library(SDL2 SDL2 lib)
 find_library(SDL2MAIN SDL2main lib)
+find_library(SDL2IMAGE SDL2_image lib)
 
 include_directories(include)
 
-target_link_libraries(SDLGame ${SDL2} ${SDL2MAIN})
+target_link_libraries(SDLGame ${SDL2} ${SDL2MAIN} ${SDL2IMAGE})

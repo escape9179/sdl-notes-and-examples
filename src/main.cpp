@@ -1,5 +1,9 @@
-//Using SDL, standard IO, and strings
+/*This source code copyrighted by Lazy Foo' Productions (2004-2020)
+and may not be redistributed without written permission.*/
+
+//Using SDL, SDL_image, standard IO, and strings
 #include <SDL.h>
+#include <SDL_image.h>
 #include <stdio.h>
 #include <string>
 
@@ -25,8 +29,8 @@ SDL_Window* gWindow = NULL;
 //The surface contained by the window
 SDL_Surface* gScreenSurface = NULL;
 
-//Current displayed image
-SDL_Surface* gStretchedSurface = NULL;
+//Current displayed PNG image
+SDL_Surface* gPNGSurface = NULL;
 
 bool init()
 {
@@ -50,8 +54,18 @@ bool init()
         }
         else
         {
-            //Get window surface
-            gScreenSurface = SDL_GetWindowSurface( gWindow );
+            //Initialize PNG loading
+            int imgFlags = IMG_INIT_PNG;
+            if( !( IMG_Init( imgFlags ) & imgFlags ) )
+            {
+                printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
+                success = false;
+            }
+            else
+            {
+                //Get window surface
+                gScreenSurface = SDL_GetWindowSurface( gWindow );
+            }
         }
     }
 
@@ -63,11 +77,11 @@ bool loadMedia()
     //Loading success flag
     bool success = true;
 
-    //Load stretching surface
-    gStretchedSurface = loadSurface( "../stretch.bmp" );
-    if( gStretchedSurface == NULL )
+    //Load PNG surface
+    gPNGSurface = loadSurface( "../loaded.png" );
+    if( gPNGSurface == NULL )
     {
-        printf( "Failed to load stretching image!\n" );
+        printf( "Failed to load PNG image!\n" );
         success = false;
     }
 
@@ -77,14 +91,15 @@ bool loadMedia()
 void close()
 {
     //Free loaded image
-    SDL_FreeSurface( gStretchedSurface );
-    gStretchedSurface = NULL;
+    SDL_FreeSurface( gPNGSurface );
+    gPNGSurface = NULL;
 
     //Destroy window
     SDL_DestroyWindow( gWindow );
     gWindow = NULL;
 
     //Quit SDL subsystems
+    IMG_Quit();
     SDL_Quit();
 }
 
@@ -94,10 +109,10 @@ SDL_Surface* loadSurface( std::string path )
     SDL_Surface* optimizedSurface = NULL;
 
     //Load image at specified path
-    SDL_Surface* loadedSurface = SDL_LoadBMP( path.c_str() );
+    SDL_Surface* loadedSurface = IMG_Load( path.c_str() );
     if( loadedSurface == NULL )
     {
-        printf( "Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+        printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
     }
     else
     {
@@ -150,13 +165,8 @@ int main( int argc, char* args[] )
                     }
                 }
 
-                //Apply the image stretched
-                SDL_Rect stretchRect;
-                stretchRect.x = 0;
-                stretchRect.y = 0;
-                stretchRect.w = SCREEN_WIDTH;
-                stretchRect.h = SCREEN_HEIGHT;
-                SDL_BlitScaled( gStretchedSurface, NULL, gScreenSurface, &stretchRect );
+                //Apply the PNG image
+                SDL_BlitSurface( gPNGSurface, NULL, gScreenSurface, NULL );
 
                 //Update the surface
                 SDL_UpdateWindowSurface( gWindow );
