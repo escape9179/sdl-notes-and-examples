@@ -781,3 +781,222 @@ SDL_RenderPresent( gRenderer );
 ```
 * Same coordinate system as window
 * Image appears squished since viewport is half the height
+### Lesson 10 - Color keying
+* Have images with transparent backgrounds
+```
+//Texture wrapper class
+class LTexture
+{
+public:
+//Initializes variables
+LTexture();
+
+//Deallocates memory
+~LTexture();
+
+//Loads image at specified path
+bool loadFromFile( std::string path );
+
+//Deallocates texture
+void free();
+
+//Renders texture at given point
+void render( int x, int y );
+
+//Gets image dimensions
+int getWidth();
+int getHeight();
+
+private:
+//The actual hardware texture
+SDL_Texture* mTexture;
+
+//Image dimensions
+int mWidth;
+int mHeight;
+};
+```
+```
+//The window we'll be rendering to
+SDL_Window* gWindow = NULL;
+
+//The window renderer
+SDL_Renderer* gRenderer = NULL;
+
+//Scene textures
+LTexture gFooTexture;
+LTexture gBackgroundTexture;
+```
+```
+LTexture::LTexture()
+{
+//Initialize
+mTexture = NULL;
+mWidth = 0;
+mHeight = 0;
+}
+
+LTexture::~LTexture()
+{
+//Deallocate
+free();
+}
+```
+```
+bool LTexture::loadFromFile( std::string path )
+{
+//Get rid of preexisting texture
+free();
+```
+* Deallocate the texture in case there's one that's already loaded
+```
+//The final texture
+SDL_Texture* newTexture = NULL;
+
+//Load image at specified path
+SDL_Surface* loadedSurface = IMG_Load( path.c_str() );
+if( loadedSurface == NULL )
+{
+printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
+}
+else
+{
+//Color key image
+SDL_SetColorKey( loadedSurface, SDL_TRUE, SDL_MapRGB( loadedSurface->format, 0, 0xFF, 0xFF ) );
+```
+* Color key image with SDL_SetColorKey
+    * arg1: surface to color key
+    * arg2: whether to enable color keying
+    * arg3: pixel to color key with
+* Cross platform way to create a pixel from RGB color is with SDL_MapRGB
+    * arg1: format the pixel should use
+    * rest: red, green, blue components for color to map
+```
+//Create texture from surface pixels
+newTexture = SDL_CreateTextureFromSurface( gRenderer, loadedSurface );
+if( newTexture == NULL )
+{
+printf( "Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+}
+else
+{
+//Get image dimensions
+mWidth = loadedSurface->w;
+mHeight = loadedSurface->h;
+}
+
+//Get rid of old loaded surface
+SDL_FreeSurface( loadedSurface );
+}
+
+//Return success
+mTexture = newTexture;
+return mTexture != NULL;
+}
+```
+* Create texture from loaded and color keyed surface
+```
+void LTexture::free()
+{
+//Free texture if it exists
+if( mTexture != NULL )
+{
+SDL_DestroyTexture( mTexture );
+mTexture = NULL;
+mWidth = 0;
+mHeight = 0;
+}
+}
+```
+* Deallocator
+```
+void LTexture::render( int x, int y )
+{
+//Set rendering space and render to screen
+SDL_Rect renderQuad = { x, y, mWidth, mHeight };
+SDL_RenderCopy( gRenderer, mTexture, NULL, &renderQuad );
+}
+```
+```
+int LTexture::getWidth()
+{
+return mWidth;
+}
+
+int LTexture::getHeight()
+{
+return mHeight;
+}
+```
+```
+bool loadMedia()
+{
+//Loading success flag
+bool success = true;
+
+//Load Foo' texture
+if( !gFooTexture.loadFromFile( "10_color_keying/foo.png" ) )
+{
+printf( "Failed to load Foo' texture image!\n" );
+success = false;
+}
+
+//Load background texture
+if( !gBackgroundTexture.loadFromFile( "10_color_keying/background.png" ) )
+{
+printf( "Failed to load background texture image!\n" );
+success = false;
+}
+
+return success;
+}
+```
+```
+void close()
+{
+//Free loaded images
+gFooTexture.free();
+gBackgroundTexture.free();
+
+//Destroy window    
+SDL_DestroyRenderer( gRenderer );
+SDL_DestroyWindow( gWindow );
+gWindow = NULL;
+gRenderer = NULL;
+
+//Quit SDL subsystems
+IMG_Quit();
+SDL_Quit();
+}
+```
+* Deallocators
+```
+//While application is running
+while( !quit )
+{
+//Handle events on queue
+while( SDL_PollEvent( &e ) != 0 )
+{
+//User requests quit
+if( e.type == SDL_QUIT )
+{
+quit = true;
+}
+}
+
+//Clear screen
+SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+SDL_RenderClear( gRenderer );
+
+//Render background texture to screen
+gBackgroundTexture.render( 0, 0 );
+
+//Render Foo' to the screen
+gFooTexture.render( 240, 190 );
+
+//Update screen
+SDL_RenderPresent( gRenderer );
+}
+```
+* Main loop with textures rendering
+* Handles events, clears screen, renders background, renders stick figure, updates screen
