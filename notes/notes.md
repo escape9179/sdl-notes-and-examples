@@ -732,3 +732,52 @@ SDL_RenderPresent( gRenderer );
 ```
 * Draws a sequence of dots vertically
 * SDL_RenderDrawPoint draws a point
+### Lesson 9 - The viewport
+* Render parts of the screen for things like minimaps
+```
+//Top left corner viewport
+SDL_Rect topLeftViewport;
+topLeftViewport.x = 0;
+topLeftViewport.y = 0;
+topLeftViewport.w = SCREEN_WIDTH / 2;
+topLeftViewport.h = SCREEN_HEIGHT / 2;
+SDL_RenderSetViewport( gRenderer, &topLeftViewport );
+
+//Render texture to screen
+SDL_RenderCopy( gRenderer, gTexture, NULL, NULL );
+```
+* Any rendering done after SDL_RenderSetViewport will render inside the region defined
+by the given viewport
+* Uses coordinate system of the window, so bottom of view will be 480 even though
+it's only 240 pixels down from the top
+```
+//Top right viewport
+SDL_Rect topRightViewport;
+topRightViewport.x = SCREEN_WIDTH / 2;
+topRightViewport.y = 0;
+topRightViewport.w = SCREEN_WIDTH / 2;
+topRightViewport.h = SCREEN_HEIGHT / 2;
+SDL_RenderSetViewport( gRenderer, &topRightViewport );
+
+//Render texture to screen
+SDL_RenderCopy( gRenderer, gTexture, NULL, NULL );
+```
+* Same as before, only now the x coordinate is half the screen over
+```
+//Bottom viewport
+SDL_Rect bottomViewport;
+bottomViewport.x = 0;
+bottomViewport.y = SCREEN_HEIGHT / 2;
+bottomViewport.w = SCREEN_WIDTH;
+bottomViewport.h = SCREEN_HEIGHT / 2;
+SDL_RenderSetViewport( gRenderer, &bottomViewport );
+
+//Render texture to screen
+SDL_RenderCopy( gRenderer, gTexture, NULL, NULL );
+
+
+//Update screen
+SDL_RenderPresent( gRenderer );
+```
+* Same coordinate system as window
+* Image appears squished since viewport is half the height
