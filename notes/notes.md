@@ -1185,3 +1185,91 @@ SDL_SetTextureColorMod( mTexture, red, green, blue );
 ```
 * Use SDL_SetTextureColorMod to set color modulation
 * Color modulation multiplies a color through the texture
+### Lesson 13 - Alpha blending
+```
+//Texture wrapper class
+class LTexture
+{
+public:
+//Initializes variables
+LTexture();
+
+//Deallocates memory
+~LTexture();
+
+//Loads image at specified path
+bool loadFromFile( std::string path );
+
+//Deallocates texture
+void free();
+
+//Set color modulation
+void setColor( Uint8 red, Uint8 green, Uint8 blue );
+
+//Set blending
+void setBlendMode( SDL_BlendMode blending );
+
+//Set alpha modulation
+void setAlpha( Uint8 alpha );
+
+//Renders texture at given point
+void render( int x, int y, SDL_Rect* clip = NULL );
+
+//Gets image dimensions
+int getWidth();
+int getHeight();
+
+private:
+//The actual hardware texture
+SDL_Texture* mTexture;
+
+//Image dimensions
+int mWidth;
+int mHeight;
+};
+```
+* Add two functions to support alpha transparency
+```
+bool loadMedia()
+{
+//Loading success flag
+bool success = true;
+
+//Load front alpha texture
+if( !gModulatedTexture.loadFromFile( "13_alpha_blending/fadeout.png" ) )
+{
+printf( "Failed to load front texture!\n" );
+success = false;
+}
+else
+{
+//Set standard alpha blending
+gModulatedTexture.setBlendMode( SDL_BLENDMODE_BLEND );
+}
+
+//Load background texture
+if( !gBackgroundTexture.loadFromFile( "13_alpha_blending/fadein.png" ) )
+{
+printf( "Failed to load background texture!\n" );
+success = false;
+}
+
+return success;
+}
+```
+* Enable blending using SDL_BlendMode
+* The lower the alpha, the more transparent
+```
+void LTexture::setBlendMode( SDL_BlendMode blending )
+{
+//Set blending function
+SDL_SetTextureBlendMode( mTexture, blending );
+}
+
+void LTexture::setAlpha( Uint8 alpha )
+{
+//Modulate texture alpha
+SDL_SetTextureAlphaMod( mTexture, alpha );
+}
+```
+* SDL_SetTextureAlphaMod allows us to set alpha for the texture
