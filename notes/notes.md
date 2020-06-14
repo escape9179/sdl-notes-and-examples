@@ -1273,3 +1273,81 @@ SDL_SetTextureAlphaMod( mTexture, alpha );
 }
 ```
 * SDL_SetTextureAlphaMod allows us to set alpha for the texture
+### Lesson 14 - Animated sprites and vsync
+```
+//Walking animation
+const int WALKING_ANIMATION_FRAMES = 4;
+SDL_Rect gSpriteClips[ WALKING_ANIMATION_FRAMES ];
+LTexture gSpriteSheetTexture;
+```
+```
+//Create vsynced renderer for window
+gRenderer = SDL_CreateRenderer( gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
+if( gRenderer == NULL )
+{
+printf( "Renderer could not be created! SDL Error: %s\n", SDL_GetError() );
+success = false;
+}
+```
+* Use vsync to make sure animation doesn't run too fast
+```
+bool loadMedia()
+{
+//Loading success flag
+bool success = true;
+
+//Load sprite sheet texture
+if( !gSpriteSheetTexture.loadFromFile( "14_animated_sprites_and_vsync/foo.png" ) )
+{
+printf( "Failed to load walking animation texture!\n" );
+success = false;
+}
+else
+{
+//Set sprite clips
+gSpriteClips[ 0 ].x =   0;
+gSpriteClips[ 0 ].y =   0;
+gSpriteClips[ 0 ].w =  64;
+gSpriteClips[ 0 ].h = 205;
+
+gSpriteClips[ 1 ].x =  64;
+gSpriteClips[ 1 ].y =   0;
+gSpriteClips[ 1 ].w =  64;
+gSpriteClips[ 1 ].h = 205;
+
+gSpriteClips[ 2 ].x = 128;
+gSpriteClips[ 2 ].y =   0;
+gSpriteClips[ 2 ].w =  64;
+gSpriteClips[ 2 ].h = 205;
+
+gSpriteClips[ 3 ].x = 196;
+gSpriteClips[ 3 ].y =   0;
+gSpriteClips[ 3 ].w =  64;
+gSpriteClips[ 3 ].h = 205;
+}
+
+return success;
+}
+```
+* Define sprites for individual frames of animation
+```
+//Main loop flag
+bool quit = false;
+
+//Event handler
+SDL_Event e;
+
+//Current animation frame
+int frame = 0;
+```
+* Define variable to keep track of current frame of animation
+* He's basically using the framerate to calculate the next texture to render.
+`SDL_Rect* currentClip = &gSpriteClips[ frame / 4 ];` will animate the
+character every 4 frames, then the `frame` variable is incremented
+### Lesson 15 - Rotation and flipping
+* `SDL_RenderCopyEx` works the same as `SDL_RenderCopy`, except it has  additional
+arguments for rotation and flipping.
+
+Ex. `SDL_RenderCopyEx( gRenderer, mTexture, clip, &renderQuad, angle, center, flip );`
+### Lesson 16 - Rendering true type fonts
+* Must use SDL_ttf extension library, like with SDL_image
