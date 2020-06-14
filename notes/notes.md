@@ -1000,3 +1000,141 @@ SDL_RenderPresent( gRenderer );
 ```
 * Main loop with textures rendering
 * Handles events, clears screen, renders background, renders stick figure, updates screen
+### Lesson 11 - Clip rendering and sprite sheets
+```
+//Texture wrapper class
+class LTexture
+{
+public:
+//Initializes variables
+LTexture();
+
+//Deallocates memory
+~LTexture();
+
+//Loads image at specified path
+bool loadFromFile( std::string path );
+
+//Deallocates texture
+void free();
+
+//Renders texture at given point
+void render( int x, int y, SDL_Rect* clip = NULL );
+
+//Gets image dimensions
+int getWidth();
+int getHeight();
+
+private:
+//The actual hardware texture
+SDL_Texture* mTexture;
+
+//Image dimensions
+int mWidth;
+int mHeight;
+};
+```
+* Render function now accepts rectangle defining portion of texture to render
+```
+//Scene sprites
+SDL_Rect gSpriteClips[ 4 ];
+LTexture gSpriteSheetTexture;
+```
+* Need 4 sprite clips for the four sprites to render in corners
+```
+void LTexture::render( int x, int y, SDL_Rect* clip )
+{
+//Set rendering space and render to screen
+SDL_Rect renderQuad = { x, y, mWidth, mHeight };
+
+//Set clip rendering dimensions
+if( clip != NULL )
+{
+renderQuad.w = clip->w;
+renderQuad.h = clip->h;
+}
+
+//Render to screen
+SDL_RenderCopy( gRenderer, mTexture, clip, &renderQuad );
+}
+```
+* clip rectangle is the source rectangle. When the source is NULL, the whole texture
+is rendered
+```
+bool loadMedia()
+{
+//Loading success flag
+bool success = true;
+
+//Load sprite sheet texture
+if( !gSpriteSheetTexture.loadFromFile( "11_clip_rendering_and_sprite_sheets/dots.png" ) )
+{
+printf( "Failed to load sprite sheet texture!\n" );
+success = false;
+}
+else
+{
+//Set top left sprite
+gSpriteClips[ 0 ].x =   0;
+gSpriteClips[ 0 ].y =   0;
+gSpriteClips[ 0 ].w = 100;
+gSpriteClips[ 0 ].h = 100;
+
+//Set top right sprite
+gSpriteClips[ 1 ].x = 100;
+gSpriteClips[ 1 ].y =   0;
+gSpriteClips[ 1 ].w = 100;
+gSpriteClips[ 1 ].h = 100;
+
+//Set bottom left sprite
+gSpriteClips[ 2 ].x =   0;
+gSpriteClips[ 2 ].y = 100;
+gSpriteClips[ 2 ].w = 100;
+gSpriteClips[ 2 ].h = 100;
+
+//Set bottom right sprite
+gSpriteClips[ 3 ].x = 100;
+gSpriteClips[ 3 ].y = 100;
+gSpriteClips[ 3 ].w = 100;
+gSpriteClips[ 3 ].h = 100;
+}
+
+return success;
+}
+```
+* Defines clip rectangles for circle sprites
+```
+//While application is running
+while( !quit )
+{
+//Handle events on queue
+while( SDL_PollEvent( &e ) != 0 )
+{
+//User requests quit
+if( e.type == SDL_QUIT )
+{
+quit = true;
+}
+}
+
+//Clear screen
+SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+SDL_RenderClear( gRenderer );
+
+//Render top left sprite
+gSpriteSheetTexture.render( 0, 0, &gSpriteClips[ 0 ] );
+
+//Render top right sprite
+gSpriteSheetTexture.render( SCREEN_WIDTH - gSpriteClips[ 1 ].w, 0, &gSpriteClips[ 1 ] );
+
+//Render bottom left sprite
+gSpriteSheetTexture.render( 0, SCREEN_HEIGHT - gSpriteClips[ 2 ].h, &gSpriteClips[ 2 ] );
+
+//Render bottom right sprite
+gSpriteSheetTexture.render( SCREEN_WIDTH - gSpriteClips[ 3 ].w, SCREEN_HEIGHT - gSpriteClips[ 3 ].h, &gSpriteClips[ 3 ] );
+
+//Update screen
+SDL_RenderPresent( gRenderer );
+}
+```
+* Render different portions of sprite sheet in different places
