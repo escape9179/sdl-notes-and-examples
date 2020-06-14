@@ -1138,3 +1138,50 @@ SDL_RenderPresent( gRenderer );
 }
 ```
 * Render different portions of sprite sheet in different places
+### Lesson 12 - Color modulation
+```
+//Texture wrapper class
+class LTexture
+{
+public:
+//Initializes variables
+LTexture();
+
+//Deallocates memory
+~LTexture();
+
+//Loads image at specified path
+bool loadFromFile( std::string path );
+
+//Deallocates texture
+void free();
+
+//Set color modulation
+void setColor( Uint8 red, Uint8 green, Uint8 blue );
+
+//Renders texture at given point
+void render( int x, int y, SDL_Rect* clip = NULL );
+
+//Gets image dimensions
+int getWidth();
+int getHeight();
+
+private:
+//The actual hardware texture
+SDL_Texture* mTexture;
+
+//Image dimensions
+int mWidth;
+int mHeight;
+};
+```
+* Add function that allows texture modulation
+```
+void LTexture::setColor( Uint8 red, Uint8 green, Uint8 blue )
+{
+//Modulate texture
+SDL_SetTextureColorMod( mTexture, red, green, blue );
+}
+```
+* Use SDL_SetTextureColorMod to set color modulation
+* Color modulation multiplies a color through the texture
